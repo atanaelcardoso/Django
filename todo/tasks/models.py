@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
+
 class Task(models.Model):
   STATUS = (
     ('doing', 'Doing'),

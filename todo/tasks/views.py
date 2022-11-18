@@ -8,39 +8,52 @@ import datetime
 
 from .models import Task
 
+
 @login_required
 def taskList(request):
 
-    search = request.GET.get('search')
-    filter = request.GET.get('filter')
-    tasksDoneRecently = Task.objects.filter(done='done', updated_at_gt=datetime.datetime.now()-datetime.timedelta(days=30), user=request.user).count()
-    taskDone = Task.objects.filter(done= 'done', user=request.user).count()
-    taskDoing = Task.objects.filter(done= 'doing', user=request.user).count()
-  
-    if search:
-  
-      tasks = Task.objects.filter(title_icontains=search, user=request.user)
+  search = request.GET.get('search')
+  filter = request.GET.get('filter')
+  tasksDoneRecently = Task.objects.filter(
+    done='done',
+    updated_at_gt=datetime.datetime.now() - datetime.timedelta(days=30),
+    user=request.user).count()
+  taskDone = Task.objects.filter(done='done', user=request.user).count()
+  taskDoing = Task.objects.filter(done='doing', user=request.user).count()
 
-    elif filter:
+  if search:
 
-      tasks = Task.objects.filter(done=filter, user=request.user)
-  
-    else:
-  
-      tasks_list = Task.objects.all().order_by('-created_at').filter(user=request.user)
-    
-      paginator = Paginator(tasks_list, 3)
-    
-      page = request.GET.get('page')
-    
-      tasks = paginator.get_page(page)
+    tasks = Task.objects.filter(title_icontains=search, user=request.user)
 
-    return render(request, 'tasks/list.html', {'tasks': tasks, 'tasksrecently': tasksDoneRecently, 'tasksdone': tasksDone, 'tasksdoing': tasksDoing})
+  elif filter:
+
+    tasks = Task.objects.filter(done=filter, user=request.user)
+
+  else:
+
+    tasks_list = Task.objects.all().order_by('-created_at').filter(
+      user=request.user)
+
+    paginator = Paginator(tasks_list, 3)
+
+    page = request.GET.get('page')
+
+    tasks = paginator.get_page(page)
+
+  return render(
+    request, 'tasks/list.html', {
+      'tasks': tasks,
+      'tasksrecently': tasksDoneRecently,
+      'tasksdone': tasksDone,
+      'tasksdoing': tasksDoing
+    })
+
 
 @login_required
 def tasKView(request, id):
   task = get_object_or_404(Task, pk=id)
   return render(request, 'tasks/task.html', {'task': task})
+
 
 @login_required
 def newTask(request):
@@ -56,6 +69,7 @@ def newTask(request):
   else:
     form = TaskForm()
     return render(request, 'tasks/addtask.html', {'form': form})
+
 
 @login_required
 def editTask(request, id):
@@ -77,27 +91,29 @@ def editTask(request, id):
   else:
     return render(request, 'tasks/edittask.html', {'form': form, 'task': task})
 
+
 @login_required
 def deleteTask(request, id):
   task = get_object_or_404(Task, pk=id)
   task.delete()
 
   messages.info(request, 'Tarefa deletada com sucesso.')
-  
+
   return redirect('/')
+
 
 @login_required
 def changeStatus(request, id):
-   task = get_object_or_404(Task, pk=id)
+  task = get_object_or_404(Task, pk=id)
 
-   if(task.done == 'doing'):
-      task.done = 'done'
-   else:
-      task.done = 'doing'
+  if (task.done == 'doing'):
+    task.done = 'done'
+  else:
+    task.done = 'doing'
 
-   task.save()
-  
-   return redirect('/')
+  task.save()
+
+  return redirect('/')
 
 
 def helloWorld(request):
